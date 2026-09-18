@@ -1,0 +1,33 @@
+name: bump-pr
+
+# The release pipeline in agent-skills pushes formula-bump/** with a deploy key,
+# which can push but cannot call the pull-request API. This opens the pull request
+# on its behalf. The formula job has already run for this same commit on the push
+# event, so the required context is green before the pull request exists.
+on:
+  push:
+    branches: ['formula-bump/**']
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  open-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Open the pull request and enable auto-merge
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          if gh pr view "$BRANCH" >/dev/null 2>&1; then
+            echo "Pull request already open for $BRANCH"
+          else
+            # Assigned, because a bump whose `formula` check fails sits here
+            # silently otherwise — auto-merge stays armed and nobody is told.
+            gh pr create --base main --head "$BRANCH" --fill --assignee eins78
+          fi
+          gh pr merge "$BRANCH" --squash --auto
