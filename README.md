@@ -6,9 +6,11 @@ Formulae for Quatico's CLIs. This repository holds formula definitions only — 
 
     brew install quatico-solutions/tap/bb
 
-Use the fully qualified name. It taps this repository and installs in one command, and it cannot be confused with the unrelated `bb` cask in homebrew-cask.
+Use the fully qualified name, and do **not** run `brew tap` first.
 
-Homebrew requires non-official taps to be trusted, since 6.0. A fully qualified install trusts the formula for you on current versions. Where it does not, run
+That one command taps this repository, trusts the formula and installs, in that order. Tapping first and then installing a short `bb` does not work: Homebrew requires non-official taps to be trusted (since 6.0) and auto-trusts only a fully qualified name — `Utils.full_name?` is "exactly two slashes", so `bb` is skipped and the install is refused with `Refusing to load formula … from untrusted tap`. A bare `bb` also matches an unrelated cask.
+
+If you hit that refusal, run
 
     brew trust --formula quatico-solutions/tap/bb
 
