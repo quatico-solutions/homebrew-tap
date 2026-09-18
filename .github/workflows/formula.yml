@@ -1,0 +1,40 @@
+name: formula
+
+# `push` covers the bump branches Task 4 pushes. GitHub attaches these check runs
+# to the head commit, so the pull request that Task 4 opens for that same commit
+# already has its required contexts green and auto-merge can land it without a
+# second run.
+on:
+  pull_request:
+  push:
+    branches: [main, 'formula-bump/**']
+
+jobs:
+  formula:
+    runs-on: macos-latest
+    # A runner image is always more than 24 hours stale, so `brew install` would
+    # auto-update, and update.sh force-checks-out every tap to its upstream branch
+    # (`git checkout --force -B`, line 330). On a formula-bump/** push that would
+    # swap this checkout for main and test the OLD formula — green, and proof of
+    # nothing. Exactly the failure this job exists to prevent.
+    env:
+      HOMEBREW_NO_AUTO_UPDATE: 1
+    steps:
+      - uses: actions/checkout@v4
+
+      # Homebrew 7 rejects a formula given as a file path, so the checkout has to
+      # become a real tap before anything can lint or install it.
+      - name: Make this checkout the tap
+        run: |
+          tap_dir="$(brew --repository)/Library/Taps/quatico-solutions/homebrew-tap"
+          mkdir -p "$(dirname "$tap_dir")"
+          ln -s "$GITHUB_WORKSPACE" "$tap_dir"
+
+      - run: brew style quatico-solutions/tap/bb
+      - run: brew audit --strict --online quatico-solutions/tap/bb
+
+      # The point of the job. A formula that lints but has never been installed is
+      # the exact failure the q CLI shipped with and caught only by hand.
+      - run: brew install quatico-solutions/tap/bb
+      - run: bb --version
+      - run: brew test quatico-solutions/tap/bb
