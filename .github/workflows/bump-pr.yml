@@ -4,9 +4,18 @@ name: bump-pr
 # which can push but cannot call the pull-request API. This opens the pull request
 # on its behalf. The formula job has already run for this same commit on the push
 # event, so the required context is green before the pull request exists.
+#
+# workflow_dispatch exists for recovery: if this job fails, the bump branch is
+# already pushed and nothing else will retry it. Re-run it against that branch
+# rather than re-cutting the release.
 on:
   push:
     branches: ['formula-bump/**']
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'formula-bump branch to open a pull request for'
+        required: true
 
 permissions:
   contents: write
@@ -16,18 +25,30 @@ jobs:
   open-pr:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-
+      # No checkout on purpose. Every command here is an API call, and the first
+      # version of this job did check out: `gh pr create --fill` then failed with
+      # "ambiguous argument 'origin/main...formula-bump/bb-1.10.1'", because --fill
+      # derives the title from `log origin/main...branch` and actions/checkout
+      # fetches only the pushed ref. Deriving the title from the branch name needs
+      # no history at all, and --repo removes the last reason to have a checkout.
       - name: Open the pull request and enable auto-merge
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BRANCH: ${{ github.ref_name }}
+          BRANCH: ${{ inputs.branch || github.ref_name }}
+          REPO: ${{ github.repository }}
         run: |
-          if gh pr view "$BRANCH" >/dev/null 2>&1; then
+          version="${BRANCH#formula-bump/bb-}"
+
+          if gh pr view "$BRANCH" --repo "$REPO" >/dev/null 2>&1; then
             echo "Pull request already open for $BRANCH"
           else
             # Assigned, because a bump whose `formula` check fails sits here
             # silently otherwise — auto-merge stays armed and nobody is told.
-            gh pr create --base main --head "$BRANCH" --fill --assignee eins78
+            gh pr create --repo "$REPO" \
+              --base main --head "$BRANCH" \
+              --title "D: bump bb to ${version}" \
+              --body "Opened by the agent-skills release pipeline. The formula points at \`cli/bb\` at tag \`working-with-bitbucket-api@${version}\`, checksummed from that tag's blob. Auto-merge is on; it lands when the \`formula\` check passes for this commit." \
+              --assignee eins78
           fi
-          gh pr merge "$BRANCH" --squash --auto
+
+          gh pr merge "$BRANCH" --repo "$REPO" --squash --auto
