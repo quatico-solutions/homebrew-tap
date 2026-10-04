@@ -24,12 +24,22 @@ homebrew-cask, an agent IDE from getbb.app.)
 
 ### Installed it as `bb` before the rename?
 
-The formula was called `bb` until 2026-10-04. `formula_renames.json` maps the
-old name to the new one, so the next `brew update` (which `brew upgrade` runs
-too) moves an installed `bb` keg to `quatico-bb` by itself. To do it right away:
+The formula was called `bb` until 2026-10-04. Move the installed keg to the new
+name with two commands:
 
-    brew update
-    brew migrate bb
+    brew trust --tap quatico-solutions/tap
+    brew migrate quatico-solutions/tap/quatico-bb
+
+`formula_renames.json` maps the old name to the new one, but `brew update` will
+not do this for you if you installed by the fully qualified name, as these
+instructions used to say. That install trusted only the formula
+`quatico-solutions/tap/bb`, not the tap, so Homebrew refuses the renamed formula
+as untrusted and skips the keg without a message. And use the full new name:
+after trusting, a bare `brew migrate bb` picks the unrelated `bb` cask and does
+nothing.
+
+Afterwards `brew list` shows both `bb` and `quatico-bb`: Homebrew keeps
+`Cellar/bb` as a symlink to the new keg. It is one install, not two.
 
 ## Formulae
 
