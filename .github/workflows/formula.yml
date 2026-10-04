@@ -30,11 +30,11 @@ jobs:
           mkdir -p "$(dirname "$tap_dir")"
           ln -s "$GITHUB_WORKSPACE" "$tap_dir"
 
-      - run: brew style quatico-solutions/tap/bb
-      - run: brew audit --strict --online quatico-solutions/tap/bb
+      - run: brew style quatico-solutions/tap/quatico-bb
+      - run: brew audit --strict --online quatico-solutions/tap/quatico-bb
 
       # The point of the job. A formula that lints but has never been installed is
       # the exact failure the q CLI shipped with and caught only by hand.
-      - run: brew install quatico-solutions/tap/bb
+      - run: brew install quatico-solutions/tap/quatico-bb
       - run: bb --version
-      - run: brew test quatico-solutions/tap/bb
+      - run: brew test quatico-solutions/tap/quatico-bb

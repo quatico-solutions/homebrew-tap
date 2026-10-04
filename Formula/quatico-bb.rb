@@ -1,4 +1,4 @@
-class Bb < Formula
+class QuaticoBb < Formula
   desc "Bitbucket Cloud CLI — gh-style wrapper around the REST API v2"
   homepage "https://github.com/quatico-solutions/agent-skills"
   url "https://raw.githubusercontent.com/quatico-solutions/agent-skills/working-with-bitbucket-api@1.10.1/cli/bb"

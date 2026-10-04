@@ -37,7 +37,7 @@ jobs:
           BRANCH: ${{ inputs.branch || github.ref_name }}
           REPO: ${{ github.repository }}
         run: |
-          version="${BRANCH#formula-bump/bb-}"
+          version="${BRANCH#formula-bump/quatico-bb-}"
 
           if gh pr view "$BRANCH" --repo "$REPO" >/dev/null 2>&1; then
             echo "Pull request already open for $BRANCH"
@@ -46,7 +46,7 @@ jobs:
             # silently otherwise — auto-merge stays armed and nobody is told.
             gh pr create --repo "$REPO" \
               --base main --head "$BRANCH" \
-              --title "D: bump bb to ${version}" \
+              --title "D: bump quatico-bb to ${version}" \
               --body "Opened by the agent-skills release pipeline. The formula points at \`cli/bb\` at tag \`working-with-bitbucket-api@${version}\`, checksummed from that tag's blob. Auto-merge is on; it lands when the \`formula\` check passes for this commit." \
               --assignee eins78
           fi
