@@ -1,8 +1,8 @@
 class QuaticoBb < Formula
   desc "Bitbucket Cloud CLI — gh-style wrapper around the REST API v2"
   homepage "https://github.com/quatico-solutions/agent-skills"
-  url "https://raw.githubusercontent.com/quatico-solutions/agent-skills/working-with-bitbucket-api@1.10.1/cli/bb"
-  sha256 "3055ee05f365940e467ff19e8f944b701b79185bb21e27da70f953f3def85307"
+  url "https://raw.githubusercontent.com/quatico-solutions/agent-skills/working-with-bitbucket-api@1.11.0/cli/bb"
+  sha256 "c59a485ed62da002896e5ccc75bcefce585cb0b0c5e80b7ceddd549dcdeddcce"
   license "MIT"
 
   depends_on "jq"
